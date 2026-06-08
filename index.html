@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technik lernen – Klassenarbeit Nr. 2</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f7f8;
+    --border: #e4e4e7;
+    --text: #1a1a1a;
+    --muted: #71717a;
+    --accent: #2563eb;
+    --accent-soft: #eff4ff;
+    --correct: #16a34a;
+    --correct-soft: #f0fdf4;
+    --wrong: #dc2626;
+    --wrong-soft: #fef2f2;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 1.25rem; }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 0 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  header .eyebrow {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.2rem;
+  }
+  header h1 { font-size: 1.5rem; font-weight: 700; }
+
+  /* NAV TABS */
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .tab {
+    flex: 1;
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    border-radius: var(--radius);
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--accent); }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* SECTIONS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* TOPIC LIST (LEARN) */
+  .topic-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+  .topic-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+    background: var(--bg);
+    transition: background 0.15s;
+  }
+  .topic-head:hover { background: var(--surface); }
+  .topic-num {
+    width: 28px; height: 28px;
+    flex-shrink: 0;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 700;
+  }
+  .topic-title { flex: 1; font-weight: 600; font-size: 1rem; }
+  .topic-arrow { color: var(--muted); transition: transform 0.2s; font-size: 0.8rem; }
+  .topic-card.open .topic-arrow { transform: rotate(90deg); }
+  .topic-body {
+    display: none;
+    padding: 0 1.25rem 1.25rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+  .topic-card.open .topic-body { display: block; }
+  .topic-body h3 { font-size: 0.95rem; margin: 1rem 0 0.4rem; color: var(--accent); }
+  .topic-body h3:first-child { margin-top: 0; }
+  .topic-body p { margin-bottom: 0.6rem; font-size: 0.94rem; }
+  .topic-body ul { margin: 0 0 0.8rem 1.2rem; font-size: 0.94rem; }
+  .topic-body li { margin-bottom: 0.25rem; }
+  .topic-body table { width: 100%; border-collapse: collapse; margin: 0.6rem 0 0.9rem; font-size: 0.9rem; }
+  .topic-body th, .topic-body td { border: 1px solid var(--border); padding: 0.45rem 0.7rem; text-align: left; }
+  .topic-body th { background: var(--surface); font-weight: 600; }
+  .merk {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 0.7rem 0.9rem;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.9rem;
+    margin: 0.6rem 0 0.9rem;
+  }
+  .merk strong { color: var(--accent); }
+  .topic-quiz-btn {
+    display: inline-block;
+    margin-top: 0.6rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .topic-quiz-btn:hover { background: var(--accent); color: #fff; }
+
+  /* QUIZ MENU */
+  .section-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+  }
+  .quiz-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 0.6rem;
+    background: var(--bg);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: all 0.15s;
+  }
+  .quiz-menu-item:hover { border-color: var(--accent); background: var(--surface); }
+  .quiz-menu-item .qm-num {
+    width: 28px; height: 28px; flex-shrink: 0;
+    background: var(--accent-soft); color: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 700;
+  }
+  .quiz-menu-item .qm-text { flex: 1; }
+  .quiz-menu-item .qm-title { font-weight: 600; font-size: 0.95rem; }
+  .quiz-menu-item .qm-sub { font-size: 0.8rem; color: var(--muted); }
+  .quiz-menu-item .qm-arrow { color: var(--muted); }
+
+  .mega-item {
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+  }
+  .mega-item .qm-num { background: var(--accent); color: #fff; }
+
+  /* QUIZ RUNNER */
+  #quiz-runner { display: none; }
+  .runner-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .back-link {
+    background: none; border: none; color: var(--muted);
+    font-size: 0.88rem; cursor: pointer; font-family: inherit;
+    padding: 0.3rem 0; font-weight: 500;
+  }
+  .back-link:hover { color: var(--text); }
+  .runner-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 1rem; }
+
+  .progress-meta {
+    display: flex; justify-content: space-between;
+    font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem;
+  }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 1.5rem; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+
+  .q-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.1rem; line-height: 1.4; }
+  .options { display: grid; gap: 0.55rem; margin-bottom: 1.1rem; }
+  .option-btn {
+    display: flex; align-items: center; gap: 0.7rem;
+    width: 100%; text-align: left;
+    border: 1px solid var(--border); background: var(--bg);
+    padding: 0.8rem 1rem; border-radius: 8px;
+    font-size: 0.95rem; font-family: inherit; color: var(--text);
+    cursor: pointer; transition: all 0.12s;
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--surface); }
+  .option-btn .ltr {
+    width: 22px; height: 22px; flex-shrink: 0;
+    border: 1px solid var(--border); border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700; color: var(--muted);
+  }
+  .option-btn.correct { border-color: var(--correct); background: var(--correct-soft); color: var(--correct); }
+  .option-btn.correct .ltr { border-color: var(--correct); color: var(--correct); }
+  .option-btn.wrong { border-color: var(--wrong); background: var(--wrong-soft); color: var(--wrong); }
+  .option-btn.wrong .ltr { border-color: var(--wrong); color: var(--wrong); }
+  .option-btn:disabled { cursor: default; }
+
+  .explain {
+    display: none;
+    font-size: 0.9rem; padding: 0.8rem 1rem; border-radius: 8px;
+    margin-bottom: 1.1rem; border-left: 3px solid;
+  }
+  .explain.show { display: block; }
+  .explain.ok { background: var(--correct-soft); border-color: var(--correct); }
+  .explain.no { background: var(--wrong-soft); border-color: var(--wrong); }
+  .explain strong { display: block; margin-bottom: 0.2rem; }
+
+  .runner-nav { display: flex; gap: 0.6rem; }
+  .btn {
+    padding: 0.7rem 1.3rem; border-radius: 8px; font-size: 0.92rem;
+    font-weight: 600; cursor: pointer; font-family: inherit; border: 1px solid;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+
+  /* RESULT */
+  #result { display: none; text-align: center; padding: 1rem 0; }
+  .result-pct { font-size: 3.5rem; font-weight: 800; line-height: 1; margin-bottom: 0.3rem; }
+  .result-pct.good { color: var(--correct); }
+  .result-pct.mid { color: var(--accent); }
+  .result-pct.low { color: var(--wrong); }
+  .result-frac { color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem; }
+  .result-msg { font-weight: 600; font-size: 1.1rem; margin-bottom: 2rem; }
+  .result-stats { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 2rem; }
+  .rstat { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.5rem; min-width: 90px; }
+  .rstat .v { font-size: 1.6rem; font-weight: 800; }
+  .rstat .l { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .rstat .v.c { color: var(--correct); }
+  .rstat .v.w { color: var(--wrong); }
+  .result-actions { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+  .btn-ghost { background: var(--bg); border-color: var(--border); color: var(--text); }
+  .btn-ghost:hover { background: var(--surface); }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 2.5rem 0 2rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Klassenarbeit Nr. 2 · Technik</div>
+    <h1>Energie & Technik – Lernen</h1>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-learn" onclick="showTab('learn')">📖 Lernen</button>
+    <button class="tab" id="tab-quiz" onclick="showTab('quiz')">✏️ Quiz</button>
+  </div>
+
+  <!-- ====== LEARN VIEW ====== -->
+  <div class="view active" id="view-learn">
+    <div id="topic-list"></div>
+  </div>
+
+  <!-- ====== QUIZ VIEW ====== -->
+  <div class="view" id="view-quiz">
+
+    <!-- MENU -->
+    <div id="quiz-menu">
+      <div class="section-label">Mega-Quiz</div>
+      <button class="quiz-menu-item mega-item" onclick="startMega()">
+        <div class="qm-num">★</div>
+        <div class="qm-text">
+          <div class="qm-title">Großes Quiz – alle Themen</div>
+          <div class="qm-sub">45 zufällige Fragen aus allen 8 Themen</div>
+        </div>
+        <div class="qm-arrow">→</div>
+      </button>
+
+      <div class="section-label" style="margin-top:1.5rem;">Einzelne Themen · je 15 Fragen</div>
+      <div id="topic-quiz-menu"></div>
+    </div>
+
+    <!-- RUNNER -->
+    <div id="quiz-runner">
+      <div class="runner-top">
+        <button class="back-link" onclick="backToMenu()">← Zurück zur Übersicht</button>
+      </div>
+      <div class="runner-title" id="runner-title"></div>
+      <div class="progress-meta">
+        <span id="pm-count">1 / 15</span>
+        <span id="pm-score">0 richtig</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="pm-fill"></div></div>
+
+      <div class="q-text" id="q-text"></div>
+      <div class="options" id="q-options"></div>
+      <div class="explain" id="q-explain"><strong id="ex-title"></strong><span id="ex-body"></span></div>
+      <div class="runner-nav">
+        <button class="btn btn-primary" id="next-btn" onclick="nextQ()" style="display:none;">Weiter →</button>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result">
+      <div class="result-pct" id="res-pct">0%</div>
+      <div class="result-frac" id="res-frac"></div>
+      <div class="result-msg" id="res-msg"></div>
+      <div class="result-stats">
+        <div class="rstat"><div class="v c" id="res-correct">0</div><div class="l">Richtig</div></div>
+        <div class="rstat"><div class="v w" id="res-wrong">0</div><div class="l">Falsch</div></div>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-primary" onclick="retry()">Nochmal</button>
+        <button class="btn btn-ghost" onclick="backToMenu()">Andere Quizze</button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>Viel Erfolg bei der Klassenarbeit, Louis! 💪</footer>
+</div>
+
+<script>
+// ============ LERNINHALTE ============
+const topics = [
+  {
+    title: "Energie, Energiequellen, Energieverbrauch",
+    content: `
+      <h3>Was ist Energie?</h3>
+      <p>Energie ist die <strong>Fähigkeit, Arbeit zu verrichten</strong>. Ohne Energie passiert nichts – kein Licht, keine Bewegung, keine Wärme.</p>
+      <h3>Einheiten</h3>
+      <ul>
+        <li><strong>Joule (J)</strong> – wissenschaftliche Einheit</li>
+        <li><strong>Kilowattstunde (kWh)</strong> – im Alltag, z.B. auf der Stromrechnung</li>
+      </ul>
+      <h3>Energiequellen</h3>
+      <table>
+        <tr><th>Erneuerbar ♻️</th><th>Nicht erneuerbar ⛽</th></tr>
+        <tr><td>Sonne</td><td>Kohle</td></tr>
+        <tr><td>Wind</td><td>Erdöl</td></tr>
+        <tr><td>Wasser</td><td>Erdgas</td></tr>
+        <tr><td>Biomasse</td><td>Uran</td></tr>
+      </table>
+      <h3>Energieverbrauch</h3>
+      <p>Wie viel Energie ein Gerät, Haushalt oder Land verbraucht – gemessen in <strong>kWh</strong>.</p>
+      <div class="merk"><strong>Energieerhaltungssatz:</strong> Energie kann weder erzeugt noch vernichtet, sondern nur <strong>umgewandelt</strong> werden.</div>
+    `
+  },
+  {
+    title: "Primärenergie",
+    content: `
+      <h3>Was ist Primärenergie?</h3>
+      <p>Primärenergie ist Energie in ihrer <strong>ursprünglichen, unbearbeiteten Form</strong> – noch vor jeder Umwandlung. Beispiele: Rohöl, Rohkohle, Wind, Sonnenstrahlung.</p>
+      <h3>Die 3 Stufen</h3>
+      <table>
+        <tr><th>Stufe</th><th>Erklärung</th><th>Beispiel</th></tr>
+        <tr><td>Primärenergie</td><td>Rohform</td><td>Rohöl, Kohle</td></tr>
+        <tr><td>Sekundärenergie</td><td>nach Umwandlung</td><td>Benzin, Strom</td></tr>
+        <tr><td>Endenergie</td><td>beim Verbraucher</td><td>Strom aus Steckdose</td></tr>
+      </table>
+      <div class="merk"><strong>Merksatz: PSE</strong> → <strong>P</strong>rimär → <strong>S</strong>ekundär → <strong>E</strong>nd</div>
+    `
+  },
+  {
+    title: "Strom aus dem Wärmekraftwerk",
+    content: `
+      <h3>Die 4 Schritte</h3>
+      <ul>
+        <li><strong>1. Brennstoff</strong> (Kohle, Gas, Öl) verbrennt → Wärme</li>
+        <li><strong>2. Dampf</strong> – Wärme erhitzt Wasser zu Dampf</li>
+        <li><strong>3. Turbine</strong> – Dampf treibt die Turbine an</li>
+        <li><strong>4. Generator</strong> – dreht sich und erzeugt Strom</li>
+      </ul>
+      <div class="merk"><strong>Merksatz: BDTG</strong> → <strong>B</strong>rennstoff → <strong>D</strong>ampf → <strong>T</strong>urbine → <strong>G</strong>enerator</div>
+      <h3>Wirkungsgrad</h3>
+      <p>Nur ca. <strong>35–45 %</strong> der Energie wird zu Strom. Der Rest (55–65 %) geht als <strong>Abwärme</strong> verloren – Wärmekraftwerke sind also nicht sehr effizient.</p>
+    `
+  },
+  {
+    title: "Primärenergieverbrauch nach Energieträgern",
+    content: `
+      <h3>Verteilung in Deutschland (ungefähr)</h3>
+      <table>
+        <tr><th>Energieträger</th><th>Anteil</th></tr>
+        <tr><td>Erdöl</td><td>~35 %</td></tr>
+        <tr><td>Erdgas</td><td>~25 %</td></tr>
+        <tr><td>Erneuerbare</td><td>~15 %</td></tr>
+        <tr><td>Kohle</td><td>~15 %</td></tr>
+        <tr><td>Sonstiges</td><td>~10 %</td></tr>
+      </table>
+      <h3>Trend</h3>
+      <ul>
+        <li>Erneuerbare steigen ⬆️</li>
+        <li>Kohle sinkt ⬇️</li>
+      </ul>
+      <div class="merk">Fossile Brennstoffe (Kohle, Öl, Gas) erzeugen beim Verbrennen <strong>CO₂</strong> → <strong>Klimawandel</strong>. Deshalb der Umstieg auf Erneuerbare.</div>
+    `
+  },
+  {
+    title: "Vom Kraftwerk zum Verbraucher",
+    content: `
+      <h3>Der Weg des Stroms</h3>
+      <ul>
+        <li><strong>1.</strong> Kraftwerk erzeugt Strom</li>
+        <li><strong>2.</strong> Transformator erhöht die Spannung auf <strong>380.000 V</strong></li>
+        <li><strong>3.</strong> Hochspannungsleitungen transportieren den Strom</li>
+        <li><strong>4.</strong> Umspannwerk senkt die Spannung schrittweise</li>
+        <li><strong>5.</strong> Haushalt bekommt <strong>230 V</strong></li>
+      </ul>
+      <h3>Warum hohe Spannung?</h3>
+      <p>Hohe Spannung = weniger Strom im Kabel = <strong>weniger Wärmeverluste</strong> beim Transport. So kommt mehr Energie beim Verbraucher an.</p>
+      <div class="merk"><strong>Transformator</strong> = wandelt die <strong>Spannung</strong> um (hoch oder runter).</div>
+    `
+  },
+  {
+    title: "Energieformen",
+    content: `
+      <h3>Die wichtigsten Energieformen</h3>
+      <table>
+        <tr><th>Energieform</th><th>Beispiel</th></tr>
+        <tr><td>Mechanisch</td><td>Bewegung, Rotation</td></tr>
+        <tr><td>Thermisch</td><td>Wärme</td></tr>
+        <tr><td>Elektrisch</td><td>Strom</td></tr>
+        <tr><td>Chemisch</td><td>Benzin, Akku</td></tr>
+        <tr><td>Strahlungsenergie</td><td>Licht, Sonne</td></tr>
+        <tr><td>Kernenergie</td><td>Uran</td></tr>
+      </table>
+      <div class="merk">Eine Glühbirne wandelt elektrische Energie in <strong>Licht + Wärme</strong> um (meistens Wärme → ineffizient).</div>
+    `
+  },
+  {
+    title: "Strom aus Wind",
+    content: `
+      <h3>So funktioniert eine Windkraftanlage</h3>
+      <ul>
+        <li><strong>1.</strong> Wind dreht die Rotorblätter</li>
+        <li><strong>2.</strong> Rotor treibt über das Getriebe den Generator an</li>
+        <li><strong>3.</strong> Generator erzeugt Strom</li>
+        <li><strong>4.</strong> Transformator erhöht die Spannung → ins Netz</li>
+      </ul>
+      <h3>Vorteile & Nachteile</h3>
+      <table>
+        <tr><th>✅ Vorteile</th><th>❌ Nachteile</th></tr>
+        <tr><td>Kein CO₂</td><td>Abhängig vom Wind</td></tr>
+        <tr><td>Erneuerbar</td><td>Nicht immer verfügbar</td></tr>
+      </table>
+      <div class="merk"><strong>Grundlastproblem:</strong> Wind liefert nicht konstant Strom (wetterabhängig) und ist nicht steuerbar.</div>
+    `
+  },
+  {
+    title: "Pumpspeicherkraftwerk",
+    content: `
+      <h3>Wie ein riesiger Akku aus Wasser</h3>
+      <p><strong>Laden (zu viel Strom im Netz):</strong> Strom treibt eine Pumpe an → Wasser wird ins Oberbecken gepumpt → Energie wird als <strong>Lageenergie</strong> gespeichert.</p>
+      <p><strong>Entladen (zu wenig Strom):</strong> Wasser fließt bergab → durch die Turbine → Generator → <strong>Strom</strong>.</p>
+      <h3>Wirkungsgrad</h3>
+      <p>Ca. <strong>75–85 %</strong> – sehr gut für einen Großspeicher.</p>
+      <div class="merk"><strong>Wertvoll fürs Netz:</strong> gleicht Schwankungen von Wind & Sonne aus → sorgt für <strong>Netzstabilität</strong>.</div>
+    `
+  }
+];
+
+// ============ FRAGEN: 15 pro Thema ============
+const quizzes = [
+  // ---- Thema 1 ----
+  [
+    { q:"Was ist Energie?", o:["Die Stärke eines Stroms","Die Fähigkeit, Arbeit zu verrichten","Die Geschwindigkeit eines Körpers","Eine Menge Brennstoff"], a:1, e:"Energie ist die Fähigkeit, Arbeit zu verrichten oder Wärme abzugeben." },
+    { q:"In welcher Einheit wird Energie gemessen?", o:["Watt (W)","Volt (V)","Joule (J) oder kWh","Ampere (A)"], a:2, e:"Energie misst man in Joule (J) oder im Alltag in Kilowattstunden (kWh)." },
+    { q:"Watt (W) ist die Einheit für ...?", o:["Energie","Leistung","Spannung","Widerstand"], a:1, e:"Watt ist die Einheit der Leistung – nicht zu verwechseln mit Energie." },
+    { q:"Welche Quelle ist NICHT erneuerbar?", o:["Sonne","Wind","Erdöl","Wasser"], a:2, e:"Erdöl ist ein fossiler Brennstoff und damit nicht erneuerbar." },
+    { q:"Welche Quelle ist erneuerbar?", o:["Kohle","Erdgas","Biomasse","Uran"], a:2, e:"Biomasse (z.B. Holz, Mais) wächst nach und ist erneuerbar." },
+    { q:"Was besagt der Energieerhaltungssatz?", o:["Energie kann erzeugt werden","Energie kann vernichtet werden","Energie kann nur umgewandelt werden","Energie ist immer gleich nutzbar"], a:2, e:"Energie kann weder erzeugt noch vernichtet, nur umgewandelt werden." },
+    { q:"Womit wird der Stromverbrauch im Haushalt gemessen?", o:["In Watt","In Kilowattstunden (kWh)","In Newton","In Ampere"], a:1, e:"Der Stromzähler misst den Verbrauch in kWh." },
+    { q:"Was sind fossile Energieträger?", o:["Sonne und Wind","Kohle, Öl und Erdgas","Wasserstoff und Sauerstoff","Holz und Stroh"], a:1, e:"Kohle, Öl und Erdgas entstanden aus abgestorbenen Organismen über Millionen Jahre." },
+    { q:"Warum gilt Kohle als nicht erneuerbar?", o:["Weil sie zu teuer ist","Weil sie über Millionen Jahre entstand und nicht nachwächst","Weil sie keine Energie liefert","Weil sie kein CO₂ erzeugt"], a:1, e:"Kohle braucht Millionen Jahre zur Entstehung – sie wächst nicht kurzfristig nach." },
+    { q:"Welcher Energieträger wird in Kernkraftwerken genutzt?", o:["Kohle","Erdöl","Uran","Biomasse"], a:2, e:"In Kernkraftwerken wird Uran durch Kernspaltung genutzt – nicht erneuerbar." },
+    { q:"Welche dieser Quellen ist erneuerbar?", o:["Erdgas","Wasser","Uran","Steinkohle"], a:1, e:"Wasser (Wasserkraft) ist erneuerbar." },
+    { q:"Was bedeutet 'Energieverbrauch'?", o:["Wie schnell Energie fließt","Wie viel Energie genutzt wird","Wie teuer Energie ist","Wie viel Energie gespeichert ist"], a:1, e:"Energieverbrauch beschreibt, wie viel Energie ein Gerät, Haushalt oder Land nutzt." },
+    { q:"Eine Glühbirne wandelt Strom um in ...?", o:["Nur Bewegung","Licht und Wärme","Nur Wärme","Chemische Energie"], a:1, e:"Strom wird in Licht und (vor allem) Wärme umgewandelt." },
+    { q:"Welche Aussage stimmt?", o:["Sonne ist nicht erneuerbar","Wind ist nicht erneuerbar","Erdöl ist erneuerbar","Biomasse ist erneuerbar"], a:3, e:"Biomasse wächst nach und ist erneuerbar." },
+    { q:"Welche Liste enthält nur erneuerbare Energien?", o:["Sonne, Wind, Wasser","Kohle, Öl, Gas","Sonne, Kohle, Wind","Uran, Wasser, Wind"], a:0, e:"Sonne, Wind und Wasser sind alle erneuerbar." }
+  ],
+  // ---- Thema 2 ----
+  [
+    { q:"Was ist Primärenergie?", o:["Strom aus der Steckdose","Energie in ursprünglicher, unbearbeiteter Form","Energie nach der Umwandlung","Energie für die Industrie"], a:1, e:"Primärenergie ist Energie in Rohform, z.B. Rohöl, Kohle oder Wind." },
+    { q:"Was entsteht aus Primärenergie durch Umwandlung?", o:["Kernenergie","Sekundärenergie","Restenergie","Umweltenergie"], a:1, e:"Durch Umwandlung entsteht Sekundärenergie (z.B. Strom, Benzin)." },
+    { q:"Was ist Endenergie?", o:["Energie, die verloren geht","Die Energie, die beim Verbraucher ankommt","Primärenergie im Bergwerk","Energie aus Kernspaltung"], a:1, e:"Endenergie ist das, was beim Verbraucher tatsächlich ankommt." },
+    { q:"Wie lautet die richtige Reihenfolge?", o:["End → Sekundär → Primär","Primär → Sekundär → End","Sekundär → End → Primär","Primär → End → Sekundär"], a:1, e:"Primär → Sekundär → End. Merksatz: PSE." },
+    { q:"Was ist ein Beispiel für Primärenergie?", o:["Strom aus der Steckdose","Benzin im Tank","Rohkohle im Bergwerk","Wärme aus der Heizung"], a:2, e:"Rohkohle ist unbearbeitet → Primärenergie." },
+    { q:"Was ist ein Beispiel für Sekundärenergie?", o:["Rohöl","Sonnenstrahlung","Benzin","Wind"], a:2, e:"Benzin entsteht aus Rohöl → Sekundärenergie." },
+    { q:"Rohöl ist ...?", o:["Sekundärenergie","Endenergie","Primärenergie","Kernenergie"], a:2, e:"Rohöl ist unbearbeitet → Primärenergie." },
+    { q:"Strom aus deiner Steckdose ist ...?", o:["Primärenergie","Endenergie","nur Sekundärenergie","Rohenergie"], a:1, e:"Beim Verbraucher angekommen = Endenergie." },
+    { q:"Wofür steht das 'S' im Merksatz PSE?", o:["Sonne","Sekundär","Strom","Speicher"], a:1, e:"P = Primär, S = Sekundär, E = End." },
+    { q:"Wind direkt aus der Natur (ohne Kraftwerk) ist ...?", o:["Sekundärenergie","Endenergie","Primärenergie","keine Energie"], a:2, e:"Wind in Rohform = Primärenergie." },
+    { q:"Was zeigt der Primärenergieverbrauch eines Landes?", o:["Nur den Stromverbrauch","Den gesamten Energieeinsatz vor Umwandlungsverlusten","Nur den Benzinverbrauch","Die Stromkosten"], a:1, e:"Er zeigt den gesamten Roh-Energieeinsatz inklusive späterer Verluste." },
+    { q:"Welche Umwandlung ist korrekt?", o:["Rohöl → Benzin (Primär → Sekundär)","Benzin → Rohöl","Strom → Rohkohle","Endenergie → Primärenergie"], a:0, e:"Aus Rohöl (Primär) wird Benzin (Sekundär)." },
+    { q:"Was passiert zwischen Primär- und Endenergie?", o:["Nichts","Umwandlung und Verluste","Nur Transport ohne Verlust","Die Energie verdoppelt sich"], a:1, e:"Bei Umwandlung und Transport entstehen Verluste." },
+    { q:"Welche Energie ist NOCH nicht umgewandelt?", o:["Benzin","Strom","Rohkohle","Wärme der Heizung"], a:2, e:"Rohkohle ist Primärenergie – noch unverändert." },
+    { q:"Sekundärenergie entsteht ...?", o:["direkt in der Natur","durch Umwandlung von Primärenergie","nur beim Verbraucher","aus Endenergie"], a:1, e:"Sekundärenergie entsteht durch Umwandlung der Primärenergie." }
+  ],
+  // ---- Thema 3 ----
+  [
+    { q:"Was passiert zuerst im Wärmekraftwerk?", o:["Dampf treibt die Turbine","Brennstoff verbrennt und erzeugt Wärme","Generator erzeugt Strom","Wasser wird gepumpt"], a:1, e:"Zuerst verbrennt der Brennstoff und erzeugt Wärme." },
+    { q:"Was wird durch die Wärme erhitzt?", o:["Öl","Luft","Wasser zu Dampf","Sand"], a:2, e:"Die Wärme erhitzt Wasser zu Dampf." },
+    { q:"Was treibt der Dampf an?", o:["Den Generator direkt","Die Turbine","Den Transformator","Den Kondensator"], a:1, e:"Der Dampf treibt die Turbine an." },
+    { q:"Was erzeugt am Ende den Strom?", o:["Die Turbine","Der Generator","Der Dampf","Der Brennstoff"], a:1, e:"Der Generator wandelt Bewegung in Strom um." },
+    { q:"Wofür steht BDTG?", o:["Brennstoff-Dampf-Turbine-Generator","Brennen-Drehen-Treiben-Geben","Boiler-Dampf-Tank-Gas","Brennstoff-Druck-Turbine-Gas"], a:0, e:"Brennstoff → Dampf → Turbine → Generator." },
+    { q:"Wie hoch ist der Wirkungsgrad eines Wärmekraftwerks?", o:["80–90 %","60–70 %","35–45 %","10–15 %"], a:2, e:"Nur ca. 35–45 % – der Rest geht als Abwärme verloren." },
+    { q:"Warum ist der Wirkungsgrad begrenzt?", o:["Der Generator dreht zu langsam","Viel Energie geht als Abwärme verloren","Wasser ist zu teuer","Turbinen sind zu klein"], a:1, e:"Ein großer Teil der Energie verpufft als Abwärme." },
+    { q:"Was ist die richtige Reihenfolge?", o:["Generator → Turbine → Dampf → Brennstoff","Brennstoff → Dampf → Turbine → Generator","Turbine → Dampf → Generator → Brennstoff","Dampf → Brennstoff → Turbine → Generator"], a:1, e:"Brennstoff → Dampf → Turbine → Generator (BDTG)." },
+    { q:"Welcher Brennstoff wird typisch verwendet?", o:["Wind","Kohle, Gas oder Öl","Wasser","Sonnenlicht"], a:1, e:"Wärmekraftwerke verbrennen Kohle, Gas oder Öl." },
+    { q:"Was wandelt die Turbine?", o:["Wärme in Dampf","Bewegung an den Generator weiter","Strom in Wärme","Dampf in Kohle"], a:1, e:"Die Turbine gibt ihre Drehbewegung an den Generator weiter." },
+    { q:"Was bedeutet 'Abwärme'?", o:["Nützliche Wärme zum Heizen","Verlorene Wärmeenergie","Wärme im Generator","Die Starttemperatur"], a:1, e:"Abwärme ist die verloren gehende Wärmeenergie." },
+    { q:"Welche Energieform hat der Brennstoff vor der Verbrennung?", o:["Elektrisch","Chemisch","Mechanisch","Strahlung"], a:1, e:"Im Brennstoff steckt chemische Energie." },
+    { q:"Wenn 100 Einheiten Energie reingehen, wie viel wird etwa zu Strom?", o:["ca. 90","ca. 40","ca. 10","ca. 100"], a:1, e:"Bei 35–45 % Wirkungsgrad sind das etwa 40 Einheiten." },
+    { q:"Welches Bauteil dreht sich, um Strom zu erzeugen?", o:["Der Brennstoff","Der Generator","Das Wasser","Die Kohle"], a:1, e:"Der sich drehende Generator erzeugt den Strom." },
+    { q:"Der Dampf ist im Kreislauf ...?", o:["chemische Energie","Bewegungs-/Wärmeenergie, die die Turbine antreibt","elektrische Energie","Lageenergie"], a:1, e:"Der heiße Dampf trägt Energie, die die Turbine antreibt." }
+  ],
+  // ---- Thema 4 ----
+  [
+    { q:"Welcher Energieträger hat in Deutschland den größten Anteil?", o:["Kohle","Kernkraft","Erdöl","Erdgas"], a:2, e:"Erdöl hat mit ca. 35 % den größten Anteil." },
+    { q:"Welcher Trend zeigt sich bei den Erneuerbaren?", o:["Sie sinken stark","Sie bleiben konstant","Sie steigen","Sie schwanken ohne Trend"], a:2, e:"Der Anteil der Erneuerbaren steigt." },
+    { q:"Warum will Deutschland weg von Kohle und Öl?", o:["Zu teuer in der Herstellung","Wegen CO₂ und Klimawandel","Sie liefern keine Energie","Zu hoher Wasserverbrauch"], a:1, e:"Beim Verbrennen entsteht CO₂, das den Klimawandel antreibt." },
+    { q:"Was ist Kohle?", o:["Erneuerbare Energie","Fossiler Brennstoff","Kernenergiequelle","Sonnenenergie"], a:1, e:"Kohle ist ein fossiler Brennstoff." },
+    { q:"Welches Gas entsteht beim Verbrennen fossiler Brennstoffe?", o:["Sauerstoff","CO₂ (Kohlenstoffdioxid)","Wasserstoff","Stickstoff"], a:1, e:"Es entsteht CO₂, das das Klima belastet." },
+    { q:"Welcher Anteil ist ungefähr richtig für Erdgas?", o:["~5 %","~25 %","~50 %","~70 %"], a:1, e:"Erdgas hat ungefähr 25 % Anteil." },
+    { q:"Welcher Energieträger sinkt im Anteil?", o:["Erneuerbare","Kohle","Erdgas-Import","Wasserstoff"], a:1, e:"Der Anteil der Kohle sinkt." },
+    { q:"Was bedeutet 'fossil'?", o:["aus der Sonne","aus abgestorbenen Organismen über Mio. Jahre","aus Wasser","künstlich hergestellt"], a:1, e:"Fossile Brennstoffe entstanden aus abgestorbenen Organismen." },
+    { q:"Welcher Energieträger nutzt Kernspaltung?", o:["Kohle","Erdöl","Uran","Biomasse"], a:2, e:"Kernkraft nutzt Uran." },
+    { q:"Warum ist Erdöl in Deutschland so wichtig?", o:["Für Mobilität (Autos) und Heizung","Nur für Stromerzeugung","Nur für die Industrie","Es ist unwichtig"], a:0, e:"Erdöl wird stark für Verkehr und Heizung gebraucht." },
+    { q:"Welche Energieträger sind erneuerbar?", o:["Erdöl und Kohle","Wind und Sonne","Uran und Gas","Kohle und Gas"], a:1, e:"Wind und Sonne sind erneuerbar." },
+    { q:"Was ist der Vorteil der Erneuerbaren beim Klima?", o:["Sie sind billiger","Sie erzeugen kein/kaum CO₂","Sie liefern mehr Energie","Sie brauchen keinen Platz"], a:1, e:"Erneuerbare erzeugen kein bzw. kaum CO₂." },
+    { q:"Welche Aussage stimmt zum Primärenergieverbrauch?", o:["Kohle ist Nummer 1","Erdöl hat den größten Anteil","Erneuerbare sind über 50 %","Kernkraft ist Nummer 1"], a:1, e:"Erdöl ist der größte Anteil (~35 %)." },
+    { q:"Wie verändert sich der Energiemix in Zukunft (Ziel)?", o:["Mehr Kohle","Weniger Erneuerbare","Mehr Erneuerbare, weniger Fossile","Keine Änderung"], a:2, e:"Ziel ist mehr erneuerbare und weniger fossile Energie." },
+    { q:"Was verursacht den Klimawandel mit?", o:["Wind","CO₂ aus fossilen Brennstoffen","Sonnenlicht","Wasser"], a:1, e:"CO₂ aus fossilen Brennstoffen trägt zum Klimawandel bei." }
+  ],
+  // ---- Thema 5 ----
+  [
+    { q:"Warum wird Strom auf sehr hohe Spannung transformiert?", o:["Um ihn schneller zu machen","Um Energieverluste im Kabel zu senken","Um Transformatoren zu schonen","Um Strom zu speichern"], a:1, e:"Hohe Spannung = weniger Strom = weniger Wärmeverluste im Kabel." },
+    { q:"Welche Spannung hat das Hochspannungsnetz?", o:["230 V","10.000 V","380.000 V","50 V"], a:2, e:"Bis zu 380.000 V (380 kV) im Übertragungsnetz." },
+    { q:"Welche Spannung erhalten Haushalte?", o:["12 V","230 V","1.000 V","380.000 V"], a:1, e:"Haushalte erhalten 230 V." },
+    { q:"Welches Gerät verändert die Spannung?", o:["Generator","Turbine","Transformator","Kondensator"], a:2, e:"Der Transformator erhöht oder senkt die Spannung." },
+    { q:"Was passiert im Umspannwerk?", o:["Strom wird gespeichert","Die Spannung wird gesenkt","Strom wird erzeugt","Kohle wird verbrannt"], a:1, e:"Das Umspannwerk senkt die Spannung schrittweise." },
+    { q:"Was wandelt ein Transformator um?", o:["Energieform","Spannung","Frequenz","Stromrichtung"], a:1, e:"Ein Transformator wandelt die Spannung um." },
+    { q:"Wie lautet der Weg des Stroms?", o:["Kraftwerk → Haushalt → Umspannwerk","Kraftwerk → Transformator → Netz → Umspannwerk → Haushalt","Haushalt → Netz → Kraftwerk","Netz → Kraftwerk → Haushalt"], a:1, e:"Kraftwerk → hoch → Netz → Umspannwerk → Haushalt (230 V)." },
+    { q:"Hohe Spannung beim Transport bedeutet ...?", o:["mehr Verlust","weniger Verlust","gleicher Verlust","kein Strom"], a:1, e:"Hohe Spannung sorgt für weniger Energieverlust." },
+    { q:"Wo wird die Spannung zuerst hochtransformiert?", o:["Beim Haushalt","Direkt nach dem Kraftwerk","Im Umspannwerk","Nirgends"], a:1, e:"Gleich nach dem Kraftwerk wird hochtransformiert." },
+    { q:"Warum gibt es ein Verbundnetz?", o:["Um Strom billiger zu machen","Für Versorgungssicherheit und Ausgleich","Um weniger Kabel zu brauchen","Damit Strom schneller fließt"], a:1, e:"Das Verbundnetz sorgt für Stabilität – Kraftwerke springen füreinander ein." },
+    { q:"Was bedeutet eine niedrige Spannung beim Transport?", o:["mehr Verluste","weniger Verluste","schnellerer Strom","mehr Sicherheit"], a:0, e:"Niedrige Spannung = mehr Strom = mehr Verluste." },
+    { q:"Welche Einheit hat die Spannung?", o:["Watt","Volt","Ampere","Joule"], a:1, e:"Spannung wird in Volt (V) gemessen." },
+    { q:"Was macht der Transformator am Kraftwerk?", o:["senkt die Spannung","erhöht die Spannung","speichert Strom","verbrennt Kohle"], a:1, e:"Er erhöht die Spannung für den Transport." },
+    { q:"Was kommt am Ende beim Verbraucher an?", o:["380.000 V","230 V","10.000 V","0 V"], a:1, e:"230 V kommen im Haushalt an." },
+    { q:"Warum ist das wichtig: hohe Spannung → wenig Strom?", o:["Strom ist gefährlich","Verluste hängen stark vom Stromfluss ab","Spannung kostet nichts","Strom fließt rückwärts"], a:1, e:"Die Wärmeverluste steigen mit dem Stromfluss – weniger Strom = weniger Verlust." }
+  ],
+  // ---- Thema 6 ----
+  [
+    { q:"Welche Energieform steckt in einem Akku?", o:["Kinetische","Thermische","Chemische","Strahlungsenergie"], a:2, e:"Im Akku steckt chemische Energie." },
+    { q:"Was ist kinetische Energie?", o:["Wärmeenergie","Bewegungsenergie","Lageenergie","Kernenergie"], a:1, e:"Kinetische Energie ist Bewegungsenergie." },
+    { q:"Was ist potenzielle Energie?", o:["Temperaturenergie","Lageenergie (durch Höhe)","Energie im Atomkern","Lichtenergie"], a:1, e:"Potenzielle Energie ist Lageenergie, z.B. Wasser im hohen Becken." },
+    { q:"Welche Energieform gibt die Sonne ab?", o:["Chemische","Kernenergie","Strahlungsenergie","Elektrische"], a:2, e:"Die Sonne gibt Strahlungsenergie ab (Licht + Wärme)." },
+    { q:"In welche Formen wandelt eine Glühbirne Strom?", o:["Nur Licht","Licht und Wärme","Nur Wärme","Bewegung"], a:1, e:"Strom → Licht + Wärme (meist Wärme)." },
+    { q:"Welche Energieform nutzt ein Verbrennungsmotor?", o:["Elektrische","Chemische (Kraftstoff)","Thermische direkt","Kernenergie"], a:1, e:"Der Motor nutzt die chemische Energie des Kraftstoffs." },
+    { q:"Ein fahrendes Auto hat welche Energieform?", o:["Chemisch","Mechanisch (kinetisch)","Strahlung","Kern"], a:1, e:"Bewegung = mechanische/kinetische Energie." },
+    { q:"Wärme ist welche Energieform?", o:["Mechanisch","Thermisch","Chemisch","Elektrisch"], a:1, e:"Wärme ist thermische Energie." },
+    { q:"Strom ist welche Energieform?", o:["Thermisch","Elektrisch","Chemisch","Mechanisch"], a:1, e:"Strom ist elektrische Energie." },
+    { q:"Was ist im Uran gespeichert?", o:["Chemische Energie","Kernenergie","Strahlungsenergie","Bewegungsenergie"], a:1, e:"In Uran steckt Kernenergie." },
+    { q:"Wasser hoch oben im Stausee hat welche Energie?", o:["Kinetische","Potenzielle (Lage)","Chemische","Thermische"], a:1, e:"Hoch gelegenes Wasser hat Lageenergie." },
+    { q:"Sonnenwärme auf der Haut ist ...?", o:["Thermische Energie","Strahlungsenergie","Chemische Energie","Mechanische Energie"], a:1, e:"Die Sonne sendet Strahlungsenergie (Licht + Wärme) aus." },
+    { q:"Eine gespannte Feder hat ...?", o:["chemische Energie","gespeicherte (potenzielle) Energie","elektrische Energie","Strahlungsenergie"], a:1, e:"Eine gespannte Feder speichert potenzielle Energie." },
+    { q:"Welche Umwandlung passiert beim Fahrradfahren?", o:["Strom → Licht","Chemisch (Körper) → mechanisch (Bewegung)","Kern → Wärme","Strahlung → Strom"], a:1, e:"Die chemische Energie im Körper wird zu Bewegung." },
+    { q:"Welche Energieform NICHT in der Liste war?", o:["Mechanisch","Thermisch","Magnetisch-flüssig","Chemisch"], a:2, e:"Die typischen Formen: mechanisch, thermisch, elektrisch, chemisch, Strahlung, Kern." }
+  ],
+  // ---- Thema 7 ----
+  [
+    { q:"Was treibt die Rotorblätter an?", o:["Strom","Dampf","Wind (bewegte Luft)","Wasser"], a:2, e:"Die kinetische Energie des Windes dreht die Rotorblätter." },
+    { q:"Welche Umwandlung findet bei Windkraft statt?", o:["Thermisch → Elektrisch","Kinetisch (Wind) → Elektrisch","Chemisch → Mechanisch","Strahlung → Elektrisch"], a:1, e:"Bewegungsenergie des Windes wird zu Strom." },
+    { q:"Was ist ein Hauptnachteil von Windkraft?", o:["Sie erzeugt CO₂","Abhängig von der Windstärke","Hoher Wasserverbrauch","Sie ist nicht erneuerbar"], a:1, e:"Ohne Wind kein Strom – sie ist wetterabhängig." },
+    { q:"Was ist ein Hauptvorteil von Windkraft?", o:["Günstiger Nachtstrom","CO₂-frei und erneuerbar","Hoher Wirkungsgrad","Überall baubar"], a:1, e:"Windkraft ist CO₂-frei und nutzt eine unerschöpfliche Quelle." },
+    { q:"Wozu dient das Getriebe?", o:["Zur Kühlung","Drehzahl an den Generator anpassen","Zur Speicherung","Zur Windmessung"], a:1, e:"Der Rotor dreht langsam, der Generator braucht schnelle Drehung." },
+    { q:"Was bedeutet 'Grundlastproblem'?", o:["Kann keine Lasten heben","Liefert nicht konstant Strom (wetterabhängig)","Zu teuer im Bau","Zu wenig Leistung"], a:1, e:"Wind/Sonne liefern nicht garantiert die ständig benötigte Grundlast." },
+    { q:"Was erzeugt am Ende den Strom in der Windanlage?", o:["Die Rotorblätter","Der Generator","Das Getriebe","Der Wind direkt"], a:1, e:"Der Generator wandelt die Drehung in Strom um." },
+    { q:"Wohin geht der Strom nach der Windanlage?", o:["direkt in den Akku","über Transformator ins Netz","ins Oberbecken","in die Turbine"], a:1, e:"Ein Transformator erhöht die Spannung, dann geht der Strom ins Netz." },
+    { q:"Wind ist physikalisch ...?", o:["Lageenergie","bewegte Luft (kinetische Energie)","Wärmeenergie","chemische Energie"], a:1, e:"Wind ist bewegte Luft = kinetische Energie." },
+    { q:"Warum ist Wind 'nicht steuerbar'?", o:["Man kann ihn nicht an-/ausschalten","Er ist zu stark","Er kostet zu viel","Er ist gefährlich"], a:0, e:"Man kann den Wind nicht nach Bedarf einschalten." },
+    { q:"Ist Windkraft erneuerbar?", o:["Ja","Nein","Nur tagsüber","Nur im Winter"], a:0, e:"Wind ist eine erneuerbare Energiequelle." },
+    { q:"Was passiert bei Windstille?", o:["Mehr Strom","Kein bzw. wenig Strom","Strom wird gespeichert","Der Generator dreht schneller"], a:1, e:"Ohne Wind erzeugt die Anlage kaum Strom." },
+    { q:"Welche Reihenfolge stimmt?", o:["Generator → Rotor → Wind","Wind → Rotor → Getriebe → Generator","Strom → Wind → Rotor","Turbine → Wind → Generator"], a:1, e:"Wind → Rotor → Getriebe → Generator → Strom." },
+    { q:"Warum baut man trotz Nachteilen Windkraft?", o:["Sie ist sauber und erneuerbar","Sie ist immer konstant","Sie braucht kein Material","Sie ist die einzige Quelle"], a:0, e:"Sie ist CO₂-frei und nutzt eine unerschöpfliche Quelle." },
+    { q:"Was gehört NICHT zur Windanlage?", o:["Rotorblätter","Generator","Brennkammer","Getriebe"], a:2, e:"Eine Brennkammer gibt es nur in Wärmekraftwerken." }
+  ],
+  // ---- Thema 8 ----
+  [
+    { q:"Wie funktioniert ein Pumpspeicherkraftwerk?", o:["Es verbrennt Strom","Es pumpt Wasser bergauf und lässt es bei Bedarf abfließen","Es speichert Strom in Akkus","Es presst Luft zusammen"], a:1, e:"Bei Überschuss wird Wasser hochgepumpt, bei Bedarf fließt es zurück durch die Turbine." },
+    { q:"Welche Energie wird im Oberbecken gespeichert?", o:["Kinetische","Elektrische","Potenzielle (Lage)","Chemische"], a:2, e:"Hoch gelegenes Wasser hat potenzielle (Lage-)Energie." },
+    { q:"Wie hoch ist der Wirkungsgrad?", o:["20–30 %","45–55 %","75–85 %","95–99 %"], a:2, e:"Ca. 75–85 % – sehr gut für einen Großspeicher." },
+    { q:"Was passiert bei zu viel Strom im Netz?", o:["Wasser wird hochgepumpt","Wasser fließt ab","Strom wird verbrannt","Nichts"], a:0, e:"Überschussstrom pumpt Wasser ins Oberbecken." },
+    { q:"Was passiert bei zu wenig Strom?", o:["Wasser wird hochgepumpt","Wasser fließt durch die Turbine und erzeugt Strom","Strom wird gespeichert","Die Pumpe läuft schneller"], a:1, e:"Wasser fließt bergab → Turbine → Generator → Strom." },
+    { q:"Warum ist ein Pumpspeicher wertvoll fürs Netz?", o:["Er erzeugt den billigsten Strom","Er gleicht Schwankungen von Wind & Sonne aus","Er braucht kein Wasser","Er hat keinen Generator"], a:1, e:"Er stabilisiert das Netz, indem er Überschuss speichert und Mangel ausgleicht." },
+    { q:"Womit wird ein Pumpspeicher oft verglichen?", o:["Mit einem Ofen","Mit einem riesigen Akku aus Wasser","Mit einer Solarzelle","Mit einem Motor"], a:1, e:"Er funktioniert wie ein großer Wasser-Akku." },
+    { q:"Welche Umwandlung passiert beim Entladen?", o:["Elektrisch → Lage","Lage → Bewegung → Elektrisch","Chemisch → Elektrisch","Wärme → Elektrisch"], a:1, e:"Lageenergie → kinetische Energie → elektrische Energie." },
+    { q:"Welche Umwandlung passiert beim Laden?", o:["Elektrisch → Lageenergie (Wasser hoch)","Lage → Elektrisch","Chemisch → Wärme","Wärme → Bewegung"], a:0, e:"Strom treibt die Pumpe an → Wasser hoch → Lageenergie." },
+    { q:"Welches Bauteil erzeugt beim Entladen den Strom?", o:["Die Pumpe","Der Generator","Das Oberbecken","Der Brennstoff"], a:1, e:"Der Generator erzeugt beim Entladen den Strom." },
+    { q:"Wann lohnt sich das Hochpumpen?", o:["Bei Stromüberschuss","Bei Strommangel","Nie","Immer nachts"], a:0, e:"Bei Überschuss (z.B. viel Wind/Sonne) wird hochgepumpt." },
+    { q:"Wann gibt der Speicher Strom ab?", o:["Bei Überschuss","Bei Strombedarf/Mangel","Nur tagsüber","Nur im Sommer"], a:1, e:"Bei Bedarf fließt das Wasser zurück und erzeugt Strom." },
+    { q:"Was braucht ein Pumpspeicher zwingend?", o:["Kohle","Zwei Becken auf unterschiedlicher Höhe","Wind","Solarzellen"], a:1, e:"Er braucht ein Ober- und ein Unterbecken mit Höhenunterschied." },
+    { q:"Ist ein Pumpspeicher ein Speicher oder eine Quelle?", o:["Eine Primärenergiequelle","Ein Energiespeicher","Ein Brennstoff","Ein Transformator"], a:1, e:"Er erzeugt keine neue Energie, er speichert sie." },
+    { q:"Warum ist der hohe Wirkungsgrad gut?", o:["Es geht wenig Energie beim Speichern verloren","Es geht viel verloren","Er erzeugt CO₂","Er braucht keine Turbine"], a:0, e:"Bei 75–85 % bleibt der meiste Strom beim Speichern erhalten." }
+  ]
+];
+
+// ============ STATE ============
+let pool = [];
+let idx = 0, correct = 0, wrong = 0, answered = false, currentTitle = "";
+
+// ============ NAV ============
+function showTab(t) {
+  document.getElementById('view-learn').classList.toggle('active', t === 'learn');
+  document.getElementById('view-quiz').classList.toggle('active', t === 'quiz');
+  document.getElementById('tab-learn').classList.toggle('active', t === 'learn');
+  document.getElementById('tab-quiz').classList.toggle('active', t === 'quiz');
+  if (t === 'quiz') backToMenu();
+}
+
+// ============ LERN-AKKORDEON ============
+function buildLearn() {
+  const list = document.getElementById('topic-list');
+  topics.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'topic-card';
+    card.innerHTML = `
+      <div class="topic-head" onclick="this.parentElement.classList.toggle('open')">
+        <div class="topic-num">${i+1}</div>
+        <div class="topic-title">${t.title}</div>
+        <div class="topic-arrow">▶</div>
+      </div>
+      <div class="topic-body">
+        ${t.content}
+        <button class="topic-quiz-btn" onclick="event.stopPropagation(); startTopic(${i})">Quiz zu diesem Thema →</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+// ============ QUIZ-MENÜ ============
+function buildQuizMenu() {
+  const menu = document.getElementById('topic-quiz-menu');
+  topics.forEach((t, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-menu-item';
+    btn.onclick = () => startTopic(i);
+    btn.innerHTML = `
+      <div class="qm-num">${i+1}</div>
+      <div class="qm-text">
+        <div class="qm-title">${t.title}</div>
+        <div class="qm-sub">15 Fragen</div>
+      </div>
+      <div class="qm-arrow">→</div>`;
+    menu.appendChild(btn);
+  });
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+// ============ QUIZ START ============
+let lastMode = null, lastTopic = null;
+
+function startTopic(i) {
+  lastMode = 'topic'; lastTopic = i;
+  currentTitle = `Thema ${i+1}: ${topics[i].title}`;
+  pool = shuffle(quizzes[i]);
+  runQuiz();
+}
+
+function startMega() {
+  lastMode = 'mega';
+  currentTitle = "Mega-Quiz · Alle Themen";
+  const all = quizzes.flat();
+  pool = shuffle(all).slice(0, 45);
+  runQuiz();
+}
+
+function runQuiz() {
+  idx = 0; correct = 0; wrong = 0;
+  showTab('quiz');
+  document.getElementById('quiz-menu').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('quiz-runner').style.display = 'block';
+  document.getElementById('runner-title').textContent = currentTitle;
+  renderQ();
+}
+
+function renderQ() {
+  answered = false;
+  const item = pool[idx];
+  document.getElementById('pm-count').textContent = `${idx+1} / ${pool.length}`;
+  document.getElementById('pm-score').textContent = `${correct} richtig`;
+  document.getElementById('pm-fill').style.width = `${((idx+1)/pool.length)*100}%`;
+  document.getElementById('q-text').textContent = item.q;
+  document.getElementById('q-explain').className = 'explain';
+  document.getElementById('next-btn').style.display = 'none';
+
+  const opts = document.getElementById('q-options');
+  opts.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  item.o.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'option-btn';
+    b.innerHTML = `<span class="ltr">${letters[i]}</span><span>${opt}</span>`;
+    b.onclick = () => answer(i);
+    opts.appendChild(b);
+  });
+}
+
+function answer(i) {
+  if (answered) return;
+  answered = true;
+  const item = pool[idx];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+  btns[item.a].classList.add('correct');
+  if (i === item.a) { correct++; }
+  else { wrong++; btns[i].classList.add('wrong'); }
+  document.getElementById('pm-score').textContent = `${correct} richtig`;
+
+  const ex = document.getElementById('q-explain');
+  const exT = document.getElementById('ex-title');
+  const exB = document.getElementById('ex-body');
+  if (i === item.a) { ex.className = 'explain ok show'; exT.textContent = '✓ Richtig!'; }
+  else { ex.className = 'explain no show'; exT.textContent = `✗ Falsch – richtig ist: ${item.o[item.a]}`; }
+  exB.textContent = item.e;
+  document.getElementById('next-btn').style.display = 'inline-block';
+  document.getElementById('next-btn').textContent = (idx+1 >= pool.length) ? 'Ergebnis ansehen →' : 'Weiter →';
+}
+
+function nextQ() {
+  idx++;
+  if (idx >= pool.length) showResult();
+  else renderQ();
+}
+
+function showResult() {
+  document.getElementById('quiz-runner').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+  const pct = Math.round((correct/pool.length)*100);
+  const pctEl = document.getElementById('res-pct');
+  pctEl.textContent = `${pct}%`;
+  pctEl.className = 'result-pct ' + (pct>=80?'good':pct>=50?'mid':'low');
+  document.getElementById('res-frac').textContent = `${correct} von ${pool.length} richtig`;
+  document.getElementById('res-correct').textContent = correct;
+  document.getElementById('res-wrong').textContent = wrong;
+  let msg;
+  if (pct>=80) msg = "Stark! Du bist gut vorbereitet. 💪";
+  else if (pct>=50) msg = "Solide – ein bisschen Wiederholung und es sitzt.";
+  else msg = "Nochmal durchgehen lohnt sich – du schaffst das!";
+  document.getElementById('res-msg').textContent = msg;
+}
+
+function retry() {
+  if (lastMode === 'topic') startTopic(lastTopic);
+  else startMega();
+}
+
+function backToMenu() {
+  document.getElementById('quiz-runner').style.display = 'none';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('quiz-menu').style.display = 'block';
+}
+
+// ============ INIT ============
+buildLearn();
+buildQuizMenu();
+</script>
+</body>
+</html>
